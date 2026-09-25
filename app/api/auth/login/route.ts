@@ -85,7 +85,7 @@ export async function POST(req: Request) {
         role: user.role,
       },
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Login API Error:', err);
     return NextResponse.json(
       { error: 'เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์' },

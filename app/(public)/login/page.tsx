@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,14 +16,8 @@ function LoginForm() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const successMessage = searchParams.get('registered') === 'true' ? 'สร้างบัญชีผู้ใช้งานสำเร็จแล้ว กรุณาเข้าสู่ระบบ' : '';
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (searchParams.get('registered') === 'true') {
-      setSuccessMessage('สร้างบัญชีผู้ใช้งานสำเร็จแล้ว กรุณาเข้าสู่ระบบ');
-    }
-  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({

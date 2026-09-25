@@ -16,7 +16,7 @@ export async function POST() {
     cookieStore.delete('token');
 
     return NextResponse.json({ message: 'ออกจากระบบสำเร็จ' });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Logout Error:', err);
     return NextResponse.json({ error: 'ไม่สามารถออกจากระบบได้' }, { status: 500 });
   }

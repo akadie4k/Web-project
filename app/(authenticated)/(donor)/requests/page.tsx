@@ -154,7 +154,7 @@ export default function RequestsPage() {
         // ==========================================
         const donorRh = normalizeRh(donorProfile.rh_factor);
 
-        const matchedRequests = (requestData ?? []).filter((request: any) => {
+        const matchedRequests = (requestData ?? []).filter((request) => {
           const requestRh = normalizeRh(request.rh_factor);
           return donorRh !== null && donorRh === requestRh;
         });

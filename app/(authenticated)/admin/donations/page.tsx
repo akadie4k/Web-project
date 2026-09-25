@@ -97,7 +97,7 @@ export default function AdminDonationsPage() {
   };
 
   useEffect(() => {
-    fetchDonations();
+    void Promise.resolve().then(fetchDonations);
   }, []);
 
   // เปิด Modal เลือกการกระทำ

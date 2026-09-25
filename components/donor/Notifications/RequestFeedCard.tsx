@@ -125,7 +125,7 @@ export default function RequestFeedCard({
       const contentType =
         response.headers.get("content-type") || "";
   
-      let data: any = null;
+      let data: { error?: string; details?: string; code?: string; hint?: string } | null = null;
   
       if (contentType.includes("application/json")) {
         data = await response.json();

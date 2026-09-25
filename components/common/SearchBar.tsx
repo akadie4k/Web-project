@@ -25,12 +25,13 @@ export default function SearchBar({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("search") || "");
 
   // โหลดค่าจาก URL มาแสดงในช่อง Search
   useEffect(() => {
     const keyword = searchParams.get("search") || "";
-    setSearch(keyword);
+    const timer = setTimeout(() => setSearch(keyword), 0);
+    return () => clearTimeout(timer);
   }, [searchParams]);
 
   // Search แบบ debounce

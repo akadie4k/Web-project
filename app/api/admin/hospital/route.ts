@@ -20,8 +20,8 @@ export async function GET() {
     }
 
     return NextResponse.json({ hospital });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Internal Server Error" }, { status: 500 });
   }
 }
 
@@ -54,8 +54,8 @@ export async function PUT(request: Request) {
     }
 
     return NextResponse.json({ hospital: updatedHospital });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("PUT Error:", err);
-    return NextResponse.json({ error: err.message || "Internal Server Error" }, { status: 500 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Internal Server Error" }, { status: 500 });
   }
 }

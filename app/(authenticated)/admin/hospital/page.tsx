@@ -41,15 +41,15 @@ export default function AdminHospitalPage() {
 
       const data = await res.json();
       setHospital(data.hospital);
-    } catch (err: any) {
-      setError(err.message || "เกิดข้อผิดพลาดในการโหลดข้อมูล");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการโหลดข้อมูล");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchHospitalData();
+    void Promise.resolve().then(fetchHospitalData);
   }, []);
 
   const handleOpenModal = () => {
@@ -85,8 +85,8 @@ export default function AdminHospitalPage() {
       setHospital(result.hospital);
       setIsModalOpen(false);
       setFeedback({ type: "success", message: "บันทึกข้อมูลโรงพยาบาลสำเร็จแล้ว" });
-    } catch (err: any) {
-      setFeedback({ type: "error", message: err.message || "เกิดข้อผิดพลาดในการบันทึก" });
+    } catch (err: unknown) {
+      setFeedback({ type: "error", message: err instanceof Error ? err.message : "เกิดข้อผิดพลาดในการบันทึก" });
     } finally {
       setSubmitting(false);
     }

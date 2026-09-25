@@ -3,10 +3,10 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const recordId = params.id;
+    const { id: recordId } = await params;
     const body = await request.json();
     const { reason } = body;
 
@@ -29,7 +29,7 @@ export async function POST(
     }
 
     return NextResponse.json({ success: true, donation: data });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || 'Internal Server Error' }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -41,7 +41,7 @@ export async function GET() {
     return NextResponse.json({
       user: sessionData.users,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Check Session Error:', err);
     return NextResponse.json({ error: 'เกิดข้อผิดพลาดภายในระบบ' }, { status: 500 });
   }
