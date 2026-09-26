@@ -1,19 +1,11 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { destroySession } from '@/lib/session';
 
 export async function POST() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
-
-    if (token) {
-      // delete session from db
-      await supabaseAdmin.from('sessions').delete().eq('token', token);
-    }
-
+    // delete session from db
     // Clear Cookie (Browser side)
-    cookieStore.delete('token');
+    await destroySession();
 
     return NextResponse.json({ message: 'ออกจากระบบสำเร็จ' });
   } catch (err: any) {

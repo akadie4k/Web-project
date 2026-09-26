@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSessionToken, destroySession } from '@/lib/session';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = await getSessionToken();
     console.log("Test from check api : ", token);
 
     if (!token) {
@@ -32,7 +32,7 @@ export async function GET() {
 
     if (error || !sessionData || !sessionData.users) {
       // if Session expires or incorrect clear Cookie
-      cookieStore.delete('token');
+      await destroySession();
       return NextResponse.json({ user: null, has_profile: false }, { status: 401 });
     }
 

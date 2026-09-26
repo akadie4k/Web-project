@@ -40,19 +40,22 @@ export async function GET() {
       hospitalId = staffRecord?.hospital_id;
     }
 
-    // 3. ดึงชื่อโรงพยาบาลจากตาราง hospitals โดยใช้คอลัมน์ "name"
+    // 3. ดึงชื่อโรงพยาบาลและจังหวัดจากตาราง hospitals
     let dbHospitalName = "";
+    let adminProvince = "";
+
     if (hospitalId) {
       const { data: hospitalData } = await supabaseAdmin
         .from("hospitals")
-        .select("name")
+        .select("name, province")
         .eq("hospital_id", hospitalId)
         .maybeSingle();
 
       dbHospitalName = hospitalData?.name || "";
+      adminProvince = hospitalData?.province || "";
     }
 
-    // 4. ดึง donation_records พร้อม blood_requests และโรงพยาบาล (ใช้คอลัมน์ name)
+    // 4. ดึง donation_records พร้อม blood_requests และโรงพยาบาล (ใช้คอลัมน์ name และ province)
     const { data: records, error: recordsError } = await supabaseAdmin
       .from("donation_records")
       .select(`
@@ -68,7 +71,8 @@ export async function GET() {
           units_needed,
           hospital_id,
           hospitals (
-            name
+            name,
+            province
           )
         )
       `)
@@ -90,6 +94,9 @@ export async function GET() {
         : firstReq?.hospitals;
 
       dbHospitalName = reqHospital?.name || "";
+      if (!adminProvince) {
+        adminProvince = reqHospital?.province || "";
+      }
     }
 
     if (!records || records.length === 0) {
@@ -99,7 +106,21 @@ export async function GET() {
       });
     }
 
-    const donorIds = Array.from(new Set(records.map((r) => r.donor_id).filter(Boolean)));
+    // กรองเฉพาะคำขอที่โรงพยาบาลอยู่ในจังหวัดเดียวกันกับ Admin
+    const filteredRecords = adminProvince
+      ? records.filter((record) => {
+          const req = Array.isArray(record.blood_requests)
+            ? record.blood_requests[0]
+            : record.blood_requests;
+          const hosp = Array.isArray(req?.hospitals)
+            ? req?.hospitals[0]
+            : req?.hospitals;
+
+          return hosp?.province?.trim() === adminProvince.trim();
+        })
+      : records;
+
+    const donorIds = Array.from(new Set(filteredRecords.map((r) => r.donor_id).filter(Boolean)));
 
     // 5. ดึง users และ donor_profiles (ใช้ UUID เดียวกัน)
     const [{ data: usersData }, { data: profilesData }] = await Promise.all([
@@ -116,7 +137,7 @@ export async function GET() {
     const userMap = new Map((usersData || []).map((u) => [u.user_id, u]));
     const profileMap = new Map((profilesData || []).map((p) => [p.donor_id, p]));
 
-    const donations = records.map((record) => {
+    const donations = filteredRecords.map((record) => {
       const user = userMap.get(record.donor_id);
       const profile = profileMap.get(record.donor_id);
       const request = Array.isArray(record.blood_requests)

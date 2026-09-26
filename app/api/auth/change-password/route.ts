@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
+import { destroySession } from '@/lib/session';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -105,16 +106,14 @@ export async function POST(request: Request) {
       );
     }
 
-   // 7. สร้าง Response และสั่งล้าง Session Cookie ทิ้งทันที
-    const response = NextResponse.json(
+    // 7. สร้าง Response และสั่งล้าง Session Cookie ทิ้งทันที
+    await destroySession();
+
+    // ลบ cookie ของ session
+    return NextResponse.json(
       { success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว' },
       { status: 200 }
     );
-
-    // ลบ cookie ของ session
-    response.cookies.delete('token');
-
-    return response;
 
   } catch (err) {
     console.error('[Server Error]:', err);

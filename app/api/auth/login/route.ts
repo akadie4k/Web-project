@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import { cookies } from 'next/headers';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { createSession } from '@/lib/session';
 
 export async function POST(req: Request) {
   try {
@@ -47,32 +46,9 @@ export async function POST(req: Request) {
     }
 
     // 3. Create Session Token and Set Expired 7 days
-    const sessionToken = crypto.randomBytes(32).toString('hex'); // YYYY-MM-DDTHH:mm:ss.sssZ
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-
     // 4. Save into sessions
-    const { error: sessionError } = await supabaseAdmin
-      .from('sessions')
-      .insert({
-        token: sessionToken,
-        user_id: user.user_id,
-        expires_at: expiresAt,
-      });
-
-    if (sessionError) {
-      return NextResponse.json({ error: sessionError.message }, { status: 500 });
-    }
-
     // 5. Save Cookie to Browser (httpOnly)
-    const cookieStore = await cookies();
-
-    cookieStore.set('token', sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      expires: new Date(expiresAt),
-    });
+    await createSession(user.user_id);
 
     // 6. Check User Have Donor Profile 
     let hasProfile = true;
