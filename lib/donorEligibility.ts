@@ -54,17 +54,12 @@ export function evaluateDonorEligibility(profile?: DonorProfileData | null): Eli
     };
   }
 
-  // 1. ตรวจสอบสถานะความพร้อมบริจาค
-  if (profile.is_ready === false) {
-    reasons.push('สถานะของคุณถูกตั้งเป็นไม่พร้อมบริจาคในขณะนี้');
-  }
-
-  // 2. ตรวจสอบน้ำหนัก >= 45 กก.
+  // 1. ตรวจสอบน้ำหนัก >= 45 กก.
   if (typeof profile.weight === 'number' && profile.weight < 45) {
     reasons.push('น้ำหนักไม่ผ่านเกณฑ์ขั้นต่ำ (ต้องไม่ต่ำกว่า 45 กก.)');
   }
 
-  // 3. คำนวณอายุและตรวจสอบเกณฑ์ (17–70 ปี / ครั้งแรก <= 60 ปี)
+  // 2. คำนวณอายุและตรวจสอบเกณฑ์ (17–70 ปี / ครั้งแรก <= 60 ปี)
   if (profile.date_of_birth) {
     const age = calculateAge(profile.date_of_birth);
 
@@ -87,7 +82,7 @@ export function evaluateDonorEligibility(profile?: DonorProfileData | null): Eli
     reasons.push('ไม่พบวันเกิดผู้บริจาค');
   }
 
-  // 4. ตรวจสอบระยะพักฟื้น 90 วัน
+  // 3. ตรวจสอบระยะพักฟื้น 90 วัน
   if (profile.last_donate_date) {
     const lastDonated = new Date(`${profile.last_donate_date}T00:00:00`);
     const nextEligibleDate = new Date(lastDonated);

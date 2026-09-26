@@ -23,7 +23,7 @@ export async function GET() {
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from("donor_profiles")
-    .select("donor_id, blood_type, rh_factor, province, is_ready, last_donate_date, date_of_birth, consent_form_url")
+    .select("donor_id, blood_type, rh_factor, province, weight, is_ready, last_donate_date, date_of_birth, consent_form_url")
     .eq("donor_id", user.user_id)
     .maybeSingle();
 
@@ -39,7 +39,8 @@ export async function GET() {
   }
 
   const eligibility = evaluateDonorEligibility(profile);
-  const canReceiveRequests = eligibility.isEligible;
+  const canEnableReadiness = eligibility.isEligible;
+  const canReceiveRequests = profile.is_ready && canEnableReadiness;
 
   const [openRequestsResult, activeDonationResult] = await Promise.all([
     supabaseAdmin
@@ -132,5 +133,13 @@ export async function GET() {
     };
   }
 
-  return NextResponse.json({ user, profile, matchedRequests, activeRequest, canReceiveRequests, eligibility });
+  return NextResponse.json({
+    user,
+    profile,
+    matchedRequests,
+    activeRequest,
+    canReceiveRequests,
+    canEnableReadiness,
+    eligibility,
+  });
 }

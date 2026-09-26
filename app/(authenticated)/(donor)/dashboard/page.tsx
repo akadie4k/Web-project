@@ -121,12 +121,15 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<DonorProfile | null>(null);
   const [matchedRequests, setMatchedRequests] = useState<BloodRequest[]>([]);
   const [canReceiveRequests, setCanReceiveRequests] = useState(false);
+  const [canEnableReadiness, setCanEnableReadiness] = useState(false);
+  const [eligibilityReasons, setEligibilityReasons] = useState<string[]>([]);
   const [activeRequest, setActiveRequest] = useState<ActiveRequest | null>(
     null,
   );
   const [isUpdatingReadiness, setIsUpdatingReadiness] = useState(false);
   const [isCancellingMission, setIsCancellingMission] = useState(false);
   const [missionError, setMissionError] = useState("");
+  const [readinessError, setReadinessError] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -149,6 +152,9 @@ export default function DashboardPage() {
 
         setUser(data.user as DashboardUser);
         setProfile(data.profile as DonorProfile);
+        setCanReceiveRequests(Boolean(data.canReceiveRequests));
+        setCanEnableReadiness(Boolean(data.canEnableReadiness));
+        setEligibilityReasons(data.eligibility?.reasons ?? []);
 
         setMatchedRequests(
           ((data.matchedRequests ?? []) as BloodRequestQueryRow[]).map(
@@ -212,15 +218,20 @@ export default function DashboardPage() {
   };
 
   const handleReadinessToggle = async () => {
-    if (!profile || recoveryStatus.isCoolingDown || isUpdatingReadiness) {
+    const nextValue = !profile?.is_ready;
+
+    if (
+      !profile ||
+      (nextValue && !canEnableReadiness) ||
+      isUpdatingReadiness
+    ) {
       return;
     }
 
     setIsUpdatingReadiness(true);
+    setReadinessError("");
 
     try {
-      const nextValue = !profile.is_ready;
-
       const response = await fetch("/api/donor/profile", {
         method: "PATCH",
         headers: {
@@ -239,8 +250,12 @@ export default function DashboardPage() {
       }
 
       setProfile(data.profile as DonorProfile);
+      setCanReceiveRequests(nextValue);
     } catch (error) {
       console.error("Unable to update readiness:", error);
+      setReadinessError(
+        error instanceof Error ? error.message : "ไม่สามารถอัปเดตสถานะได้",
+      );
     } finally {
       setIsUpdatingReadiness(false);
     }
@@ -305,8 +320,7 @@ export default function DashboardPage() {
                     type="button"
                     onClick={handleReadinessToggle}
                     disabled={
-                      !canReceiveRequests ||
-                      recoveryStatus.isCoolingDown ||
+                      (!profile?.is_ready && !canEnableReadiness) ||
                       isUpdatingReadiness
                     }
                     aria-pressed={Boolean(
@@ -322,28 +336,38 @@ export default function DashboardPage() {
                         : "transition hover:border-[#65a1f2]"
                     }`}
                   >
-                    <p className="flex items-center gap-2 text-sm font-bold text-slate-700">
-                      <span
-                        className={`h-2.5 w-2.5 rounded-full ${
-                          profile?.is_ready && !recoveryStatus.isCoolingDown
-                            ? "bg-emerald-500"
-                            : "bg-slate-400"
-                        }`}
-                      />
-
-                      {recoveryStatus.isCoolingDown
-                        ? `พักฟื้นอีก ${recoveryStatus.daysRemaining} วัน`
-                        : profile?.is_ready
-                          ? "พร้อมรับแจ้งเตือนด่วน"
-                          : "ปิดรับแจ้งเตือนด่วน"}
-                    </p>
-
-                    <p className="mt-0.5 text-xs text-slate-500">
+                    <span
+                      aria-hidden="true"
+                      className={`relative h-7 w-12 shrink-0 rounded-full ring-1 ring-inset ring-black/10 transition-colors after:absolute after:left-1 after:top-1 after:size-5 after:rounded-full after:bg-white after:shadow-md after:ring-1 after:ring-black/5 after:transition-transform ${
+                        profile?.is_ready && !recoveryStatus.isCoolingDown
+                          ? "bg-emerald-500 after:translate-x-5"
+                          : "bg-slate-300"
+                      }`}
+                    />
+                    <span>
+                      <span className="block text-sm font-bold text-slate-700">
+                        พร้อมบริจาค
+                      </span>
+                      <span className="mt-0.5 block text-xs text-slate-500">
+                        {recoveryStatus.isCoolingDown
+                          ? `พักฟื้นอีก ${recoveryStatus.daysRemaining} วัน`
+                          : profile?.is_ready
+                            ? "พร้อมรับแจ้งเตือนคำร้องขอบริจาค"
+                            : "ไม่พร้อมรับแจ้งเตือนคำร้องขอบริจาค"}
+                      </span>
+                    </span>
+                    <span className="sr-only">
                       {recoveryStatus.isCoolingDown
                         ? "เว้นระยะอย่างน้อย 90 วันหลังบริจาค"
                         : "กดเพื่อเปลี่ยนสถานะพร้อมบริจาค"}
-                    </p>
+                    </span>
                   </button>
+
+                  {readinessError && (
+                    <p role="alert" className="text-sm text-red-600">
+                      {readinessError}
+                    </p>
+                  )}
 
                   <Link
                     href="/Notifications"
@@ -355,14 +379,18 @@ export default function DashboardPage() {
                 </div>
               </section>
 
-              {!canReceiveRequests && (
+              {!canEnableReadiness && (
                 <div
                   role="alert"
                   className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800"
                 >
                   <p className="flex items-start gap-2 font-bold">
                     <i className="fa-solid fa-triangle-exclamation mt-0.5" />
-                    <span>{PARENT_CONSENT_MESSAGE}</span>
+                    <span>
+                      {eligibilityReasons.length > 0
+                        ? eligibilityReasons.join(" ")
+                        : PARENT_CONSENT_MESSAGE}
+                    </span>
                   </p>
                 </div>
               )}
@@ -478,7 +506,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="space-y-3">
-                      {matchedRequests.length > 0 ? (
+                      {canReceiveRequests && matchedRequests.length > 0 ? (
                         matchedRequests.map((request) => (
                           <article
                             key={request.request_id}
@@ -521,7 +549,11 @@ export default function DashboardPage() {
                         ))
                       ) : (
                         <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">
-                          ยังไม่มีเคสเปิดที่ตรงกับโปรไฟล์ของคุณในขณะนี้
+                          {canReceiveRequests
+                            ? "ยังไม่มีเคสเปิดที่ตรงกับโปรไฟล์ของคุณในขณะนี้"
+                            : canEnableReadiness
+                              ? "เปิดสถานะพร้อมบริจาคเพื่อดูเคสที่ตรงกับโปรไฟล์ของคุณ"
+                              : "ขณะนี้ยังไม่สามารถรับเคสบริจาคได้"}
                         </div>
                       )}
                     </div>
