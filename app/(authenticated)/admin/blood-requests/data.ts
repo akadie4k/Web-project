@@ -98,7 +98,7 @@ function toRequestView(row: BloodRequestRow): RequestView {
 
 function scopedHospitalId(user: AuthUser) {
   if (user.hospital_id) return user.hospital_id;
-  if (user.role === 'system_admin') return null;
+  if (user.role === 'hospital_admin') return null;
   throw new Error('บัญชีเจ้าหน้าที่ยังไม่ได้ผูกกับโรงพยาบาล');
 }
 

@@ -8,7 +8,7 @@ export async function requireHospitalAdmin() {
     redirect('/login');
   }
 
-  if (user.role !== 'hospital_admin' && user.role !== 'system_admin') {
+  if (user.role !== 'hospital_admin') {
     redirect('/dashboard');
   }
 

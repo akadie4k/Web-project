@@ -42,7 +42,7 @@ export async function GET() {
 
     // Check User Have Donor Profile
     let hasProfile = true;
-    if (user.role !== 'hospital_admin' && user.role !== 'system_admin') {
+    if (user.role !== 'hospital_admin' && user.role) {
       const { data: donorProfile } = await supabaseAdmin
         .from('donors_profiles')
         .select('donor_id')
