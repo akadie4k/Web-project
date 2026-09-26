@@ -37,7 +37,7 @@ export default function RequestsPage() {
       try {
         setLoading(true);
 
-        const response = await fetch("/api/donor/Notifications", {
+        const response = await fetch("/api/donor/Notifications/", {
           credentials: "include",
         });
 

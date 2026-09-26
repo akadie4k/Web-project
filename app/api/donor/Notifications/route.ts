@@ -59,7 +59,8 @@ export async function GET() {
       hospitals!inner (
         hospital_id,
         name,
-        province
+        province,
+        operating_hours
       ),
       donation_records (
         record_id,
