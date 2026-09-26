@@ -105,10 +105,17 @@ export async function POST(request: Request) {
       );
     }
 
-    return NextResponse.json(
+   // 7. สร้าง Response และสั่งล้าง Session Cookie ทิ้งทันที
+    const response = NextResponse.json(
       { success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จเรียบร้อยแล้ว' },
       { status: 200 }
     );
+
+    // ลบ cookie ของ session
+    response.cookies.delete('token');
+
+    return response;
+
   } catch (err) {
     console.error('[Server Error]:', err);
     return NextResponse.json(
