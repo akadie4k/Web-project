@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getDonorSessionUser } from "@/lib/donorSession";
+import { evaluateDonorEligibility } from "@/lib/donorEligibility";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET() {
@@ -13,7 +14,7 @@ export async function GET() {
   const [profileResult, recordsResult] = await Promise.all([
     supabaseAdmin
       .from("donor_profiles")
-      .select("donor_id, blood_type, rh_factor")
+      .select("donor_id, blood_type, rh_factor, weight, date_of_birth, last_donate_date, is_ready, consent_form_url")
       .eq("donor_id", user.user_id)
       .maybeSingle(),
     supabaseAdmin
@@ -61,6 +62,7 @@ export async function GET() {
   return NextResponse.json({
     user,
     profile: profileResult.data,
+    eligibility: evaluateDonorEligibility(profileResult.data),
     records: recordsResult.data ?? [],
   });
 }

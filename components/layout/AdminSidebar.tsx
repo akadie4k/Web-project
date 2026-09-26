@@ -1,11 +1,6 @@
-'use client';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState, type ReactNode } from 'react';
-import DonorNavbar from '@/components/layout/DonorNavbar';
-import Footer from '@/components/layout/Footer';
-import { basePath, Icon } from '@/components/ui/blood-request';
+"use client";
 
+<<<<<<< HEAD
 const items = [
   { label: 'Dashboard', icon: 'home' as const, href: '/admin/dashboard' },
   { label: 'Blood Request', icon: 'file' as const, href: '/admin/blood-requests' },
@@ -15,39 +10,400 @@ const items = [
   { label: 'Hospitals', icon: 'hospital' as const, href: '/admin/hospitals' }, // แก้ไขจาก /admin/hospital เป็น /admin/hospitals
   { label: 'Reports', icon: 'clock' as const },
   { label: 'Settings', icon: 'clock' as const },
+=======
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, type ReactNode } from "react";
+
+import {
+  faHouse,
+  faFileLines,
+  faHospital,
+  faBars,
+  faHandHoldingMedical,
+  faGlobe
+} from "@fortawesome/free-solid-svg-icons";
+
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import AdminNavbar from "@/components/layout/AdminNavbar";
+import Footer from "@/components/layout/Footer";
+
+const menuItems = [
+  {
+    label: "หน้าหลัก",
+    href: "/",
+    icon: faGlobe,
+  },
+  {
+    label: "เเดชบอร์ด",
+    href: "/admin/dashboard",
+    icon: faHouse,
+  },
+  {
+    label: "สร้างคำร้องขอบริจาคเลือด",
+    href: "/admin/blood-requests/create",
+    icon: faFileLines,
+  },
+  {
+    label: "โรงพยาบาล",
+    href: "/admin/hospital",
+    icon: faHospital,
+  },
+  {
+    label: "จัดการบริจาคเลือด",
+    href: "/admin/donations",
+    icon: faHandHoldingMedical,
+  },
+>>>>>>> upstream/main
 ];
 
-export default function AdminSidebar({ children, userName }: { children: ReactNode; userName: string }) {
-  const [open, setOpen] = useState(false);
-  return <div className="min-h-screen w-full bg-[#f3f7fb] font-sans text-[#0e3b6c]">
-    <a className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[70] focus:rounded-lg focus:bg-white focus:p-3" href="#blood-request-main">ข้ามไปยังเนื้อหา</a>
-    {open && <button className="fixed inset-0 z-[55] bg-slate-900/40 md:hidden" type="button" aria-label="ปิดเมนู" onClick={() => setOpen(false)} />}
-    <aside className={`fixed inset-y-0 left-0 z-[60] flex h-dvh w-64 flex-col overflow-y-auto border-r border-[#dee8f3] bg-[#fafdff] px-3 py-5 transition-transform duration-300 md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`} aria-label="เมนูผู้ดูแล">
-      <div className="mb-6 flex items-center justify-between gap-2 px-1">
-        <Link className="flex min-w-0 items-center gap-2" href={basePath} onClick={() => setOpen(false)}>
-          <Image className="h-11 w-9 shrink-0 object-contain" src="/logo_bloodConnect.svg" alt="BloodConnect" width={36} height={44} priority />
-          <span className="min-w-0"><b className="block text-[21px] leading-tight text-[#0e3b6c]">Blood<span className="text-[#dc2626]">Connect</span></b><small className="block text-[9px] text-[#65a1f2]">Connect Lives Save Lives</small></span>
-        </Link>
-        <button type="button" className="text-xl text-slate-500 md:hidden" aria-label="ปิดเมนู" onClick={() => setOpen(false)}>×</button>
+export default function AdminSidebar({
+  children,
+  userName: _userName,
+}: {
+  children: ReactNode;
+  userName: string;
+}) {
+  const pathname = usePathname();
+
+  // true = เปิด / false = ปิด
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div className="min-h-screen bg-[#f6f9fc] text-[#0E3B6C]">
+
+      {/* =========================
+          Mobile Overlay
+      ========================= */}
+      {open && (
+        <button
+          type="button"
+          aria-label="ปิดเมนู"
+          onClick={() => setOpen(false)}
+          className="
+            fixed
+            inset-0
+            z-[50]
+            bg-slate-900/30
+            backdrop-blur-[1px]
+            md:hidden
+          "
+        />
+      )}
+
+      {/* =========================
+          Sidebar
+      ========================= */}
+      <aside
+        className={`
+          fixed
+          left-0
+          top-0
+          z-[80]
+          flex
+          h-screen
+          w-64
+          flex-col
+          border-r
+          border-slate-200
+          bg-white
+          shadow-[4px_0_20px_rgba(14,59,108,0.04)]
+          transition-transform
+          duration-300
+          ease-out
+
+          ${open ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
+
+        {/* =========================
+            Sidebar Header
+        ========================= */}
+        <div
+          className="
+            flex
+            h-20
+            shrink-0
+            items-center
+            border-b
+            border-slate-100
+            px-5
+          "
+        >
+          <Link
+            href="/"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-3"
+          >
+            <Image
+              src="/logo_bloodConnect.svg"
+              alt="BloodConnect"
+              width={42}
+              height={42}
+              priority
+              className="
+                h-10
+                w-10
+                shrink-0
+                object-contain
+              "
+            />
+
+            <div>
+              <div
+                className="
+                  text-[18px]
+                  font-bold
+                  leading-tight
+                  tracking-tight
+                "
+              >
+                <span className="text-[#0E3B6C]">
+                  Blood
+                </span>
+
+                <span className="text-[#DC2626]">
+                  Connect
+                </span>
+              </div>
+
+              <div
+                className="
+                  mt-0.5
+                  text-[8px]
+                  font-semibold
+                  tracking-[0.12em]
+                  text-[#65A1F2]
+                "
+              >
+                CONNECT LIVES SAVE LIVES
+              </div>
+            </div>
+          </Link>
+
+          {/* =========================
+              3 ขีด - Mobile Only
+          ========================= */}
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="
+              ml-auto
+              flex
+              h-9
+              w-9
+              shrink-0
+              items-center
+              justify-center
+              rounded-lg
+              text-slate-400
+              transition
+              hover:bg-slate-100
+              hover:text-[#126fd1]
+              md:hidden
+            "
+            aria-label="ปิดเมนู"
+            title="ปิดเมนู"
+          >
+            <FontAwesomeIcon
+              icon={faBars}
+              className="h-5 w-5"
+            />
+          </button>
+        </div>
+
+        {/* =========================
+            Menu
+        ========================= */}
+        <nav className="flex-1 px-4 py-8">
+          <p
+            className="
+              mb-3
+              px-3
+              text-[10px]
+              font-bold
+              tracking-[0.14em]
+              text-slate-400
+            "
+          >
+            MENU
+          </p>
+
+          <div className="space-y-1">
+            {menuItems.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                pathname.startsWith(`${item.href}/`);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={`
+                    group
+                    relative
+                    flex
+                    items-center
+                    gap-3
+                    rounded-xl
+                    px-3
+                    py-3.5
+                    text-[14px]
+                    font-medium
+                    transition-all
+                    duration-200
+
+                    ${
+                      isActive
+                        ? "bg-[#126fd1]/10 text-[#126fd1]"
+                        : "text-slate-500 hover:bg-slate-50 hover:text-[#126fd1]"
+                    }
+                  `}
+                >
+                  {/* Active Indicator */}
+                  {isActive && (
+                    <span
+                      className="
+                        absolute
+                        left-0
+                        top-1/2
+                        h-6
+                        w-1
+                        -translate-y-1/2
+                        rounded-r-full
+                        bg-[#126fd1]
+                      "
+                    />
+                  )}
+
+                  {/* Icon */}
+                  <FontAwesomeIcon
+                    icon={item.icon}
+                    className={`
+                      h-[17px]
+                      w-[17px]
+                      transition
+
+                      ${
+                        isActive
+                          ? "text-[#126fd1]"
+                          : "text-slate-400 group-hover:text-[#126fd1]"
+                      }
+                    `}
+                  />
+
+                  {/* Label */}
+                  <span>{item.label}</span>
+
+                  {/* Notification */}
+                  {item.label === "Blood Requests" && (
+                    <span
+                      className="
+                        ml-auto
+                        h-2
+                        w-2
+                        rounded-full
+                        bg-[#DC2626]
+                      "
+                    />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* =========================
+            Bottom Branding
+        ========================= */}
+        <div
+          className="
+            shrink-0
+            border-t
+            border-slate-100
+            px-5
+            py-4
+          "
+        >
+          <div className="flex items-center gap-2 px-1">
+            <Image
+              src="/logo_bloodConnect.svg"
+              alt="BloodConnect"
+              width={24}
+              height={24}
+              className="
+                h-6
+                w-6
+                shrink-0
+                object-contain
+              "
+            />
+
+            <div>
+              <p
+                className="
+                  text-[11px]
+                  font-semibold
+                  text-[#0E3B6C]
+                "
+              >
+                BloodConnect
+              </p>
+
+              <p
+                className="
+                  text-[9px]
+                  text-slate-400
+                "
+              >
+                © 2026 All rights reserved.
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* =========================
+          Main Content
+      ========================= */}
+      <div
+        className={`
+          flex
+          min-h-screen
+          flex-col
+          transition-all
+          duration-300
+
+          ${open ? "md:ml-64" : "md:ml-0"}
+        `}
+      >
+        <AdminNavbar
+          onMenuClick={() => setOpen(true)}
+          onToggleSidebar={() => setOpen((prev) => !prev)}
+          isSidebarOpen={open}
+        />
+
+        <main
+          className="
+            flex-1
+            px-4
+            pb-8
+            pt-[80px]
+            sm:px-6
+          "
+        >
+          {children}
+        </main>
+
+        <Footer />
       </div>
-      <div className="mb-5 flex items-center gap-3 rounded-xl bg-white p-3">
-        <span className="relative flex size-12 shrink-0 items-center justify-center rounded-full bg-[#36577e] text-2xl text-white">{userName.slice(0, 1).toUpperCase()}<i className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-white bg-emerald-500" /></span>
-        <div className="min-w-0"><strong className="block break-words text-sm">{userName}</strong><small className="block text-xs text-[#6480a1]">เจ้าหน้าที่โรงพยาบาล</small><small className="text-xs text-emerald-600">● ออนไลน์</small></div>
-      </div>
-      <nav aria-label="เมนูหลัก" className="space-y-1">{items.map(item => item.href
-        ? <Link key={item.label} className="flex min-h-12 items-center gap-4 rounded-lg border-l-2 border-[#dc2626] bg-[#fde9ed] px-4 text-sm font-semibold text-[#dc2626]" href={item.href} onClick={() => setOpen(false)}><Icon name={item.icon} />{item.label}</Link>
-        : <span key={item.label} className="flex min-h-12 items-center gap-4 rounded-lg px-4 text-sm text-[#0e3b6c] opacity-70" aria-disabled="true"><Icon name={item.icon} />{item.label}</span>)}</nav>
-      <div className="mt-auto px-3 pt-10">
-        <strong className="text-lg leading-7">ทุกหยดเลือด<br />คือโอกาสให้ชีวิต</strong>
-        <p className="mt-2 text-sm text-[#6480a1]">Give Blood<br />Give Hope</p>
-        <div className="mt-3 h-20 overflow-hidden rounded-lg bg-[#ffedf1] text-center text-6xl text-[#f6a8b4]" aria-hidden="true">♥</div>
-        <div className="mt-5 flex items-center gap-2 text-xs"><Image src="/logo_bloodConnect.svg" alt="" width={24} height={28} /><span>BloodConnect<small className="block text-[10px] text-[#6480a1]">© 2026 All rights reserved.</small></span></div>
-      </div>
-    </aside>
-    <div className="flex min-h-screen flex-col md:ml-64">
-      <DonorNavbar onMenuClick={() => setOpen(true)} />
-      <main id="blood-request-main" className="mx-auto w-full max-w-[1800px] flex-1 px-3 pb-8 pt-[116px] sm:px-6 md:pt-20">{children}</main>
-      <Footer />
     </div>
+<<<<<<< HEAD
   </div>;
+=======
+  );
+>>>>>>> upstream/main
 }

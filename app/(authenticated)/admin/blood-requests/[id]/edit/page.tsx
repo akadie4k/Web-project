@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
   // สถานะที่จบแล้วจริงๆ ห้ามแก้ไข
   if (request.status === 'FULFILLED' || request.status === 'CANCELLED') {
-    redirect(`/blood-requests/${id}`);
+    redirect(`/admin/blood-requests/${id}`);
   }
 
   const isExpired = effectiveBloodRequestStatus(request.status, request.date) === 'EXPIRED';

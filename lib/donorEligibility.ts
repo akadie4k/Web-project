@@ -3,6 +3,7 @@ export interface DonorProfileData {
   date_of_birth?: string | null;
   last_donate_date?: string | null;
   is_ready?: boolean | null;
+  consent_form_url?: string | null;
 }
 
 export interface EligibilityResult {
@@ -16,6 +17,9 @@ export interface EligibilityResult {
 export const MIN_DONOR_AGE = 17;
 export const MAX_DONOR_AGE = 70;
 
+export const PARENT_CONSENT_MESSAGE =
+  'เปิดรับบริจาคโลหิตสำหรับผู้ที่มีอายุ 18-60 ปี (หากอายุ 17 ปีบริบูรณ์ ต้องมีหนังสือยินยอมจากผู้ปกครอง)';
+
 export function calculateAge(dateOfBirth: string, today = new Date()): number {
   const birth = new Date(dateOfBirth);
   let age = today.getFullYear() - birth.getFullYear();
@@ -23,7 +27,12 @@ export function calculateAge(dateOfBirth: string, today = new Date()): number {
   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
+
   return age;
+}
+
+export function canReceiveDonationRequests(profile?: DonorProfileData | null): boolean {
+  return evaluateDonorEligibility(profile).isEligible;
 }
 
 /**
@@ -63,7 +72,10 @@ export function evaluateDonorEligibility(profile?: DonorProfileData | null): Eli
       reasons.push('อายุไม่อยู่ในเกณฑ์ที่สามารถบริจาคได้ (17–70 ปี)');
     } else {
       if (age === 17) {
-        requiresParentConsent = true; // อายุ 17 ปี ต้องมีหนังสือยินยอม
+        requiresParentConsent = true;
+        if (!profile.consent_form_url) {
+          reasons.push('อายุ 17 ปีต้องมีหนังสือยินยอมจากผู้ปกครอง');
+        }
       }
       // บริจาคครั้งแรก (ไม่มี last_donate_date) ต้องอายุไม่เกิน 60 ปี
       const isFirstTime = !profile.last_donate_date;
@@ -71,6 +83,8 @@ export function evaluateDonorEligibility(profile?: DonorProfileData | null): Eli
         reasons.push('ผู้บริจาคครั้งแรกต้องมีอายุไม่เกิน 60 ปี');
       }
     }
+  } else {
+    reasons.push('ไม่พบวันเกิดผู้บริจาค');
   }
 
   // 4. ตรวจสอบระยะพักฟื้น 90 วัน

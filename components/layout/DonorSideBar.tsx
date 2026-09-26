@@ -7,7 +7,10 @@ import { usePathname } from "next/navigation";
 import {
   faClockRotateLeft,
   faBell,
-  faXmark,
+  faBars,
+  faGlobe,
+  faHorse,
+  faChartPie,
   faHouse,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -16,12 +19,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 interface MenuItem {
   label: string;
   href: string;
-  icon: typeof faHouse;
+  icon: typeof faGlobe;
 }
 
 const menuItems: MenuItem[] = [
   {
     label: "หน้าหลัก",
+    href: "/",
+    icon: faGlobe,
+  },
+  {
+    label: "แดชบอร์ด",
     href: "/dashboard",
     icon: faHouse,
   },
@@ -32,7 +40,7 @@ const menuItems: MenuItem[] = [
   },
   {
     label: "การแจ้งเตือน",
-    href: "/requests",
+    href: "/Notifications",
     icon: faBell,
   },
 ];
@@ -50,16 +58,16 @@ export default function DonorSideBar({
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* ================= MOBILE OVERLAY ================= */}
       {isOpen && (
         <button
           type="button"
-          aria-label="Close sidebar"
+          aria-label="ปิดเมนู"
           onClick={onClose}
           className="
             fixed
             inset-0
-            z-[55]
+            z-[50]
             bg-slate-900/30
             backdrop-blur-[1px]
             md:hidden
@@ -67,13 +75,13 @@ export default function DonorSideBar({
         />
       )}
 
-      {/* Sidebar */}
+      {/* ================= SIDEBAR ================= */}
       <aside
         className={`
           fixed
           left-0
           top-0
-          z-[60]
+          z-[80]
           flex
           h-screen
           w-64
@@ -84,19 +92,14 @@ export default function DonorSideBar({
           transition-transform
           duration-300
           ease-out
-
           ${
             isOpen
               ? "translate-x-0"
               : "-translate-x-full"
           }
-
-          md:translate-x-0
         `}
       >
-        {/* =========================
-            Logo
-        ========================= */}
+        {/* ================= HEADER ================= */}
         <div
           className="
             flex
@@ -108,16 +111,12 @@ export default function DonorSideBar({
             px-6
           "
         >
+          {/* Logo + BloodConnect */}
           <Link
-            href="/dashboard"
+            href="/"
             onClick={onClose}
-            className="
-              flex
-              items-center
-              gap-3
-            "
+            className="flex items-center gap-3"
           >
-            {/* Your Logo */}
             <Image
               src="/logo_bloodConnect.svg"
               alt="BloodConnect Logo"
@@ -132,7 +131,6 @@ export default function DonorSideBar({
               "
             />
 
-            {/* Brand */}
             <div>
               <div
                 className="
@@ -165,11 +163,12 @@ export default function DonorSideBar({
             </div>
           </Link>
 
-          {/* Mobile close button */}
+          {/* ================= MOBILE CLOSE ================= */}
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close menu"
+            aria-label="ปิดเมนู"
+            title="ปิดเมนู"
             className="
               ml-auto
               flex
@@ -181,20 +180,18 @@ export default function DonorSideBar({
               text-slate-400
               transition
               hover:bg-slate-100
-              hover:text-slate-700
+              hover:text-[#126fd1]
               md:hidden
             "
           >
             <FontAwesomeIcon
-              icon={faXmark}
-              className="h-4 w-4"
+              icon={faBars}
+              className="h-5 w-5"
             />
           </button>
         </div>
 
-        {/* =========================
-            Navigation
-        ========================= */}
+        {/* ================= MENU ================= */}
         <nav className="flex-1 px-4 py-7">
           <p
             className="
@@ -210,14 +207,11 @@ export default function DonorSideBar({
             MENU
           </p>
 
-          {/* Menu Items */}
           <div className="space-y-1">
             {menuItems.map((item) => {
               const isActive =
                 pathname === item.href ||
-                pathname.startsWith(
-                  `${item.href}/`
-                );
+                pathname.startsWith(`${item.href}/`);
 
               return (
                 <Link
@@ -240,19 +234,12 @@ export default function DonorSideBar({
 
                     ${
                       isActive
-                        ? `
-                          bg-[#126fd1]/10
-                          text-[#126fd1]
-                        `
-                        : `
-                          text-slate-500
-                          hover:bg-slate-50
-                          hover:text-[#126fd1]
-                        `
+                        ? "bg-[#126fd1]/10 text-[#126fd1]"
+                        : "text-slate-500 hover:bg-slate-50 hover:text-[#126fd1]"
                     }
                   `}
                 >
-                  {/* Active indicator */}
+                  {/* Active Bar */}
                   {isActive && (
                     <span
                       className="
@@ -287,8 +274,8 @@ export default function DonorSideBar({
                   {/* Label */}
                   <span>{item.label}</span>
 
-                  {/* Notification dot */}
-                  {item.href === "/requests" && (
+                  {/* Notification Dot */}
+                  {item.href === "/Notifications" && (
                     <span
                       className="
                         ml-auto
@@ -305,6 +292,53 @@ export default function DonorSideBar({
           </div>
         </nav>
 
+        {/* ================= FOOTER ================= */}
+        <div
+          className="
+            shrink-0
+            border-t
+            border-slate-100
+            px-6
+            py-5
+          "
+        >
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo_bloodConnect.svg"
+              alt="BloodConnect"
+              width={34}
+              height={34}
+              className="
+                h-8
+                w-8
+                shrink-0
+                object-contain
+              "
+            />
+
+            <div>
+              <p
+                className="
+                  text-[13px]
+                  font-semibold
+                  tracking-tight
+                "
+              >
+                <span className="text-[#0E3B6C]">
+                  Blood
+                </span>
+
+                <span className="text-[#DC2626]">
+                  Connect
+                </span>
+              </p>
+
+              <p className="text-[9px] text-slate-400">
+                จัดการข้อมูลส่วนตัว
+              </p>
+            </div>
+          </div>
+        </div>
       </aside>
     </>
   );

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 // =====================================================
-// PATCH /api/requests/:id
+// PATCH /api/Notifications/:id
 // แก้ไขคำร้องขอเลือด
 // =====================================================
 export async function PATCH(
@@ -93,7 +93,7 @@ export async function PATCH(
       .single();
 
     if (error) {
-      console.error("PATCH /api/requests/[id] error:", error);
+      console.error("PATCH /api/Notifications/[id] error:", error);
 
       return NextResponse.json(
         {
@@ -155,7 +155,7 @@ export async function DELETE(
       .eq("request_id", id);
 
     if (error) {
-      console.error("DELETE /api/requests/[id] error:", error);
+      console.error("DELETE /api/Notifications/[id] error:", error);
 
       return NextResponse.json(
         {

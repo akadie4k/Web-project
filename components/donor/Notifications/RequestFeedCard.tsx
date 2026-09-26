@@ -36,6 +36,7 @@ export default function RequestFeedCard({
     request.rh_factor === "-";
 
   const sign = isNegative ? "-" : "+";
+
   const bloodGroup =
     `${request.blood_type}${sign}`;
 
@@ -101,49 +102,69 @@ export default function RequestFeedCard({
   // =========================================
   const handleDonate = async () => {
     if (isDonating || remainingUnits <= 0) return;
-  
+
     setIsDonating(true);
     setDonateError("");
-  
+
     try {
       console.log("===== START DONATE =====");
-      console.log("REQUEST ID:", request.request_id);
-  
-      const response = await fetch("/api/donations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          request_id: request.request_id,
-        }),
-      });
-  
-      console.log("API STATUS:", response.status);
-  
+      console.log(
+        "REQUEST ID:",
+        request.request_id
+      );
+
+      const response = await fetch(
+        "/api/donations",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            request_id:
+              request.request_id,
+          }),
+        }
+      );
+
+      console.log(
+        "API STATUS:",
+        response.status
+      );
+
       const contentType =
-        response.headers.get("content-type") || "";
-  
+        response.headers.get(
+          "content-type"
+        ) || "";
+
       let data: any = null;
-  
-      if (contentType.includes("application/json")) {
+
+      if (
+        contentType.includes(
+          "application/json"
+        )
+      ) {
         data = await response.json();
       } else {
-        const responseText = await response.text();
-  
+        const responseText =
+          await response.text();
+
         console.error(
           "API RETURNED NON-JSON:",
           responseText
         );
-  
+
         throw new Error(
           `API Error (${response.status})`
         );
       }
-  
-      console.log("API RESPONSE:", data);
-  
+
+      console.log(
+        "API RESPONSE:",
+        data
+      );
+
       // =========================================
       // API Error
       // =========================================
@@ -152,7 +173,7 @@ export default function RequestFeedCard({
           "DONATION API ERROR:",
           data
         );
-  
+
         const errorMessage = [
           data?.error,
           data?.details,
@@ -161,13 +182,13 @@ export default function RequestFeedCard({
         ]
           .filter(Boolean)
           .join(" | ");
-  
+
         throw new Error(
           errorMessage ||
             "ไม่สามารถตอบรับการบริจาคได้"
         );
       }
-  
+
       // =========================================
       // Success
       // =========================================
@@ -175,9 +196,9 @@ export default function RequestFeedCard({
         "DONATION SUCCESS:",
         data
       );
-  
+
       setShowDonatePopup(false);
-  
+
       router.push("/dashboard");
       router.refresh();
     } catch (error) {
@@ -185,7 +206,7 @@ export default function RequestFeedCard({
         "DONATE ERROR:",
         error
       );
-  
+
       setDonateError(
         error instanceof Error
           ? error.message
@@ -462,6 +483,7 @@ export default function RequestFeedCard({
 
             {/* Detail */}
             <div className="p-6 space-y-4">
+
               {/* Blood */}
               <div className="flex items-center gap-4">
                 <BloodBadge
@@ -496,6 +518,22 @@ export default function RequestFeedCard({
 
                   {request.hospitals?.province ||
                     "ไม่ระบุจังหวัด"}
+                </p>
+              </div>
+
+              {/* Operating Hours */}
+              <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <i className="fa-solid fa-clock text-[#126fd1]" />
+
+                  <p className="text-xs text-slate-500">
+                    เวลาทำการ
+                  </p>
+                </div>
+
+                <p className="font-bold text-[#0e3b6c]">
+                  {request.hospitals?.operating_hours ||
+                    "ไม่ระบุเวลาทำการ"}
                 </p>
               </div>
 
@@ -776,6 +814,7 @@ export default function RequestFeedCard({
                   {isDonating ? (
                     <>
                       <i className="fa-solid fa-spinner fa-spin text-xs" />
+
                       <span>
                         กำลังตอบรับ...
                       </span>
@@ -783,6 +822,7 @@ export default function RequestFeedCard({
                   ) : (
                     <>
                       <i className="fa-solid fa-check text-xs" />
+
                       <span>
                         ยืนยันการตอบรับ
                       </span>

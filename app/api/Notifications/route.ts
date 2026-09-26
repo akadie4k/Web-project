@@ -142,7 +142,7 @@ export async function GET() {
       requests: requests ?? [],
     });
   } catch (error) {
-    console.error("GET /api/auth/requests error:", error);
+    console.error("GET /api/auth/Notifications error:", error);
     return NextResponse.json(
       {
         error: "Internal server error",

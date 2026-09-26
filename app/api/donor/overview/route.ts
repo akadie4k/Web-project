@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getDonorSessionUser } from "@/lib/donorSession";
+import { evaluateDonorEligibility } from "@/lib/donorEligibility";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { bangkokToday } from "@/types/database";
 
@@ -22,7 +23,7 @@ export async function GET() {
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from("donor_profiles")
-    .select("donor_id, blood_type, rh_factor, province, is_ready, last_donate_date")
+    .select("donor_id, blood_type, rh_factor, province, is_ready, last_donate_date, date_of_birth, consent_form_url")
     .eq("donor_id", user.user_id)
     .maybeSingle();
 
@@ -36,6 +37,9 @@ export async function GET() {
   if (!profile) {
     return NextResponse.json({ error: "ไม่พบข้อมูลผู้บริจาค" }, { status: 404 });
   }
+
+  const eligibility = evaluateDonorEligibility(profile);
+  const canReceiveRequests = eligibility.isEligible;
 
   const [openRequestsResult, activeDonationResult] = await Promise.all([
     supabaseAdmin
@@ -85,7 +89,7 @@ export async function GET() {
     );
   }
 
-  const matchedRequests = (openRequestsResult.data ?? []).filter(
+  const matchedRequests = (canReceiveRequests ? openRequestsResult.data ?? [] : []).filter(
     (request) => normalizeRh(request.rh_factor) === normalizeRh(profile.rh_factor),
   );
 
@@ -128,5 +132,5 @@ export async function GET() {
     };
   }
 
-  return NextResponse.json({ user, profile, matchedRequests, activeRequest });
+  return NextResponse.json({ user, profile, matchedRequests, activeRequest, canReceiveRequests, eligibility });
 }

@@ -23,6 +23,7 @@ export interface BloodRequest {
   hospitals?: {
     name: string;
     province: string;
+    operating_hours?: string | null;
   };
   donation_records?: {
     record_id: string;

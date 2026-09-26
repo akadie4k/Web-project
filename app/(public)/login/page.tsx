@@ -18,6 +18,51 @@ function LoginForm() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  // ฟังก์ชันช่วยนำทางตาม Role และสถานะ Donor Profile
+  const handleUserNavigation = (user: any, hasProfile?: boolean, replace = false) => {
+    let targetUrl = '/dashboard';
+
+    if (user?.role === 'hospital_admin' || user?.role === 'system_admin') {
+      targetUrl = '/admin/dashboard';
+    } else if (hasProfile === false || user?.has_profile === false) {
+      // หากเป็นผู้ใช้ทั่วไปแต่ยังไม่มี Donor Profile ให้เด้งไปหน้า profile ทันที
+      targetUrl = '/profile';
+    } else {
+      targetUrl = '/dashboard';
+    }
+
+    if (replace) {
+      router.replace(targetUrl);
+    } else {
+      router.push(targetUrl);
+    }
+  };
+
+  // ตรวจสอบสถานะการเข้าสู่ระบบค้างไว้หรือไม่
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/auth/check', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user) {
+            // นำทางตามประเภทผู้ใช้งาน และเช็ค Donor Profile
+            const hasProfile = data.has_profile ?? data.user.has_profile;
+            handleUserNavigation(data.user, hasProfile, true);
+            return;
+          }
+        }
+      } catch {
+        // หากตรวจไม่พบ session หรือเกิดข้อผิดพลาด ให้เข้าสู่หน้าฟอร์มปกติ
+      } finally {
+        setIsCheckingSession(false);
+      }
+    };
+
+    checkSession();
+  }, [router]);
 
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
@@ -52,12 +97,9 @@ function LoginForm() {
         return;
       }
 
-      // นำทางตามประเภทผู้ใช้งาน
-      if (data.user?.role === 'hospital_admin' || data.user?.role === 'system_admin') {
-        router.push('/admin/dashboard');
-      } else {
-        router.push('/dashboard');
-      }
+      // นำทางตามประเภทผู้ใช้ และเช็คว่ามี Donor Profile
+      const hasProfile = data.has_profile ?? data.user?.has_profile;
+      handleUserNavigation(data.user, hasProfile, false);
       router.refresh();
     } catch {
       setErrorMessage('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
@@ -65,8 +107,18 @@ function LoginForm() {
     }
   };
 
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-3">
+        <div className="size-8 animate-spin rounded-full border-4 border-[#126fd1] border-t-transparent" />
+        <span className="text-xs font-semibold text-slate-400">กำลังตรวจสอบสถานะการเข้าสู่ระบบ...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 antialiased selection:bg-[#ea384c] selection:text-white flex flex-col justify-start sm:justify-center items-center p-4 pt-6 sm:p-6">
+      
       {/* ปุ่มย้อนกลับหน้าหลัก */}
       <div className="w-full max-w-[480px] mb-4">
         <Link

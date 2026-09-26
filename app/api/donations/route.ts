@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getSessionToken } from "@/lib/session";
 import { effectiveBloodRequestStatus } from "@/types/database";
+import { canReceiveDonationRequests, PARENT_CONSENT_MESSAGE } from "@/lib/donorEligibility";
 
 // =========================================
 // POST /api/donations
@@ -66,6 +67,20 @@ export async function POST(request: Request) {
     }
 
     const userId = session.user_id;
+
+    const { data: donorProfile, error: donorProfileError } = await supabaseAdmin
+      .from("donor_profiles")
+      .select("date_of_birth, consent_form_url")
+      .eq("donor_id", userId)
+      .maybeSingle();
+
+    if (donorProfileError) {
+      return NextResponse.json({ error: "ไม่สามารถตรวจสอบสิทธิ์ผู้บริจาคได้" }, { status: 500 });
+    }
+
+    if (!canReceiveDonationRequests(donorProfile)) {
+      return NextResponse.json({ error: PARENT_CONSENT_MESSAGE }, { status: 403 });
+    }
 
     console.log("USER ID:", userId);
 
@@ -165,6 +180,7 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
+
 
     // =========================================
     // 7. ตรวจสอบว่าผู้บริจาคมีการตอบรับที่ยังใช้งานอยู่หรือไม่

@@ -2,7 +2,7 @@ import 'server-only';
 
 import type { AuthUser } from '@/lib/auth';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
-import type { BloodRequest, Hospital } from '@/types/database';
+import { bangkokToday, effectiveBloodRequestStatus, type BloodRequest, type Hospital } from '@/types/database';
 import type { RequestView } from '@/components/ui/blood-request';
 
 type HospitalRow = {
@@ -53,6 +53,14 @@ const urgencyOrder: Record<BloodRequest['urgency_level'], number> = {
   CRITICAL: 0,
   HIGH: 1,
   NORMAL: 2,
+};
+
+const statusOrder: Record<ReturnType<typeof effectiveBloodRequestStatus>, number> = {
+  OPEN: 0,
+  IN_PROGRESS: 1,
+  EXPIRED: 2,
+  FULFILLED: 3,
+  CANCELLED: 4,
 };
 
 function getHospital(relation: BloodRequestRow['hospitals']) {
@@ -119,9 +127,12 @@ export async function getBloodRequestsForUser(user: AuthUser): Promise<RequestVi
   const { data, error } = await query;
   if (error) throw new Error(`โหลดคำร้องขอเลือดไม่สำเร็จ: ${error.message}`);
 
+  const today = bangkokToday();
   return ((data ?? []) as unknown as BloodRequestRow[])
     .map(toRequestView)
-    .sort((a, b) => urgencyOrder[a.urgency] - urgencyOrder[b.urgency]
+    .sort((a, b) => statusOrder[effectiveBloodRequestStatus(a.status, a.date, today)]
+      - statusOrder[effectiveBloodRequestStatus(b.status, b.date, today)]
+      || urgencyOrder[a.urgency] - urgencyOrder[b.urgency]
       || b.createdAt.localeCompare(a.createdAt)
       || a.id.localeCompare(b.id));
 }

@@ -8,10 +8,8 @@ export async function GET() {
     const token = cookieStore.get('token')?.value;
     console.log("Test from check api : ", token);
 
-
-
     if (!token) {
-      return NextResponse.json({ user: null }, { status: 401 });
+      return NextResponse.json({ user: null, has_profile: false }, { status: 401 });
     }
 
     // Find token in sessions with users (join)
@@ -34,12 +32,32 @@ export async function GET() {
 
     if (error || !sessionData || !sessionData.users) {
       // if Session expires or incorrect clear Cookie
-      cookieStore.delete('session_token');
-      return NextResponse.json({ user: null }, { status: 401 });
+      cookieStore.delete('token');
+      return NextResponse.json({ user: null, has_profile: false }, { status: 401 });
+    }
+
+    const user = Array.isArray(sessionData.users)
+      ? sessionData.users[0]
+      : sessionData.users;
+
+    // Check User Have Donor Profile
+    let hasProfile = true;
+    if (user.role !== 'hospital_admin' && user.role !== 'system_admin') {
+      const { data: donorProfile } = await supabaseAdmin
+        .from('donors_profiles')
+        .select('donor_id')
+        .eq('donor_id', user.user_id)
+        .maybeSingle();
+
+      hasProfile = Boolean(donorProfile);
     }
 
     return NextResponse.json({
-      user: sessionData.users,
+      user: {
+        ...user,
+        has_profile: hasProfile,
+      },
+      has_profile: hasProfile,
     });
   } catch (err: any) {
     console.error('Check Session Error:', err);
