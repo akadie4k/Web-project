@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BloodBadge from "@/components/BloodBadge";
@@ -67,6 +65,25 @@ export default function AdminDonationsPage() {
   const [customRejectReason, setCustomRejectReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState("");
+
+  // ล็อคไม่ให้เลื่อนหน้าจอพื้นหลังขณะเปิด Modal ตัวใดตัวหนึ่ง
+  useEffect(() => {
+    const isAnyModalOpen =
+      isActionModalOpen ||
+      isConfirmModalOpen ||
+      isConsentModalOpen ||
+      isRejectModalOpen;
+
+    if (isAnyModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isActionModalOpen, isConfirmModalOpen, isConsentModalOpen, isRejectModalOpen]);
 
   const fetchDonations = async () => {
     try {
@@ -480,8 +497,15 @@ export default function AdminDonationsPage() {
 
       {/* ================= MODAL 1: เมนูเลือกการจัดการ (Action Menu Modal) ================= */}
       {isActionModalOpen && selectedDonation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm select-none"
+          aria-modal="true"
+          role="dialog"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl select-text"
+          >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-bold text-[#0e3b6c]">
                 จัดการรายการบริจาค
@@ -542,8 +566,15 @@ export default function AdminDonationsPage() {
 
       {/* ================= MODAL 2: บันทึกการบริจาคสำเร็จ ================= */}
       {isConfirmModalOpen && selectedDonation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm select-none"
+          aria-modal="true"
+          role="dialog"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl select-text"
+          >
             <div className="flex items-center gap-2">
               <i className="fa-solid fa-square-check text-lg text-emerald-600" />
               <h3 className="text-base sm:text-lg font-bold text-[#0e3b6c]">
@@ -604,8 +635,15 @@ export default function AdminDonationsPage() {
 
       {/* ================= MODAL 3: ปฏิเสธคำขอและลง Notes ================= */}
       {isRejectModalOpen && selectedDonation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm select-none"
+          aria-modal="true"
+          role="dialog"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl select-text"
+          >
             <div className="flex items-center gap-2">
               <div className="flex size-9 items-center justify-center rounded-xl bg-red-100 text-red-600">
                 <i className="fa-solid fa-triangle-exclamation text-base" />
@@ -675,8 +713,15 @@ export default function AdminDonationsPage() {
 
       {/* ================= MODAL 4: ตรวจดูใบยินยอม ================= */}
       {isConsentModalOpen && selectedDonation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl">
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm select-none"
+          aria-modal="true"
+          role="dialog"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl select-text"
+          >
             <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <i className="fa-solid fa-file-contract text-base text-[#126fd1]" />

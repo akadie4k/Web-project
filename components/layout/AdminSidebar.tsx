@@ -7,12 +7,12 @@ import Footer from '@/components/layout/Footer';
 import { basePath, Icon } from '@/components/ui/blood-request';
 
 const items = [
-  { label: 'Dashboard', icon: 'home' as const },
-  { label: 'Blood Request', icon: 'file' as const, href: basePath },
+  { label: 'Dashboard', icon: 'home' as const, href: '/admin/dashboard' },
+  { label: 'Blood Request', icon: 'file' as const, href: '/admin/blood-requests' },
   { label: 'Notifications', icon: 'bell' as const },
   { label: 'History', icon: 'clock' as const },
   { label: 'Users', icon: 'users' as const },
-  { label: 'Hospitals', icon: 'hospital' as const },
+  { label: 'Hospitals', icon: 'hospital' as const, href: '/admin/hospitals' }, // แก้ไขจาก /admin/hospital เป็น /admin/hospitals
   { label: 'Reports', icon: 'clock' as const },
   { label: 'Settings', icon: 'clock' as const },
 ];

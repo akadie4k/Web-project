@@ -3,10 +3,11 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // เปลี่ยนเป็น Promise<{ id: string }>
 ) {
   try {
-    const recordId = params.id;
+    const resolvedParams = await params; // await เพื่อดึงค่า params ออกมา
+    const recordId = resolvedParams.id;
     const body = await request.json();
     const { reason } = body;
 

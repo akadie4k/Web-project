@@ -28,11 +28,25 @@ export default function AdminHospitalPage() {
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
+  // ล็อคไม่ให้เลื่อนหน้าจอพื้นหลังขณะเปิด Modal
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isModalOpen]);
+
   const fetchHospitalData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/api/admin/hospital", { credentials: "include" });
+      // ปรับแก้ URL ให้เติม s เป็น /api/admin/hospitals ให้ตรงกับโครงสร้างโฟลเดอร์
+      const res = await fetch("/api/admin/hospitals", { credentials: "include" });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -72,7 +86,8 @@ export default function AdminHospitalPage() {
       setSubmitting(true);
       setFeedback(null);
 
-      const res = await fetch("/api/admin/hospital", {
+      // ปรับแก้ URL ให้เติม s เป็น /api/admin/hospitals ให้ตรงกับโครงสร้างโฟลเดอร์
+      const res = await fetch("/api/admin/hospitals", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -244,10 +259,17 @@ export default function AdminHospitalPage() {
           </div>
         )}
 
-        {/* Modal แก้ไขข้อมูล */}
+        {/* Modal แก้ไขข้อมูล (ยกเลเยอร์ขึ้น z-[9999] และล็อคฉากหลัง) */}
         {isModalOpen && hospital && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in">
-            <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl">
+          <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm select-none"
+            aria-modal="true"
+            role="dialog"
+          >
+            <div 
+              onClick={(e) => e.stopPropagation()} 
+              className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 sm:p-8 shadow-2xl select-text"
+            >
               <div className="mb-4 flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-2xl bg-blue-50 text-[#126fd1]">
