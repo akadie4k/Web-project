@@ -24,7 +24,7 @@ function LoginForm() {
   const handleUserNavigation = (user: any, hasProfile?: boolean, replace = false) => {
     let targetUrl = '/dashboard';
 
-    if (user?.role === 'hospital_admin' || user?.role === 'system_admin') {
+    if (user?.role === 'hospital_admin') {
       targetUrl = '/admin/dashboard';
     } else if (hasProfile === false || user?.has_profile === false) {
       // หากเป็นผู้ใช้ทั่วไปแต่ยังไม่มี Donor Profile ให้เด้งไปหน้า profile ทันที
