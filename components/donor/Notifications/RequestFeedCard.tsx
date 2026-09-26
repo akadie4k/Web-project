@@ -521,7 +521,7 @@ export default function RequestFeedCard({
                 </p>
               </div>
 
-              {/* Operating Hours */}
+              {/*Operating Hours*/}
               <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <i className="fa-solid fa-clock text-[#126fd1]" />
