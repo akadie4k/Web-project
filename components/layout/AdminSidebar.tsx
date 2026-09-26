@@ -1,5 +1,16 @@
 "use client";
 
+<<<<<<< HEAD
+const items = [
+  { label: 'Dashboard', icon: 'home' as const, href: '/admin/dashboard' },
+  { label: 'Blood Request', icon: 'file' as const, href: '/admin/blood-requests' },
+  { label: 'Notifications', icon: 'bell' as const },
+  { label: 'History', icon: 'clock' as const },
+  { label: 'Users', icon: 'users' as const },
+  { label: 'Hospitals', icon: 'hospital' as const, href: '/admin/hospitals' }, // แก้ไขจาก /admin/hospital เป็น /admin/hospitals
+  { label: 'Reports', icon: 'clock' as const },
+  { label: 'Settings', icon: 'clock' as const },
+=======
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -45,6 +56,7 @@ const menuItems = [
     href: "/admin/donations",
     icon: faHandHoldingMedical,
   },
+>>>>>>> upstream/main
 ];
 
 export default function AdminSidebar({
@@ -389,5 +401,9 @@ export default function AdminSidebar({
         <Footer />
       </div>
     </div>
+<<<<<<< HEAD
+  </div>;
+=======
   );
+>>>>>>> upstream/main
 }
