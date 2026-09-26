@@ -31,7 +31,7 @@ export default function ChangePasswordPage() {
     }
 
     if (password !== confirmPassword) {
-      setErrorMsg('รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน');
+      setErrorMsg('รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
       return;
     }
 

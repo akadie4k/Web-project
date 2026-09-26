@@ -47,7 +47,7 @@ export async function POST(req: Request) {
     }
 
     // 3. Create Session Token and Set Expired 7 days
-    const sessionToken = crypto.randomBytes(32).toString('hex');
+    const sessionToken = crypto.randomBytes(32).toString('hex'); // YYYY-MM-DDTHH:mm:ss.sssZ
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
     // 4. Save into sessions
