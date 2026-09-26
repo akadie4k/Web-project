@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
     // 6. Check User Have Donor Profile 
     let hasProfile = true;
-    if (user.role !== 'hospital_admin' && user.role !== 'system_admin') {
+    if (user.role !== 'hospital_admin') {
       const { data: donorProfile } = await supabaseAdmin
         .from('donor_profiles') 
         .select('donor_id')
