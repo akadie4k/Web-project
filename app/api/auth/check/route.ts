@@ -44,7 +44,7 @@ export async function GET() {
     let hasProfile = true;
     if (user.role !== 'hospital_admin' && user.role) {
       const { data: donorProfile } = await supabaseAdmin
-        .from('donors_profiles')
+        .from('donor_profiles')
         .select('donor_id')
         .eq('donor_id', user.user_id)
         .maybeSingle();
