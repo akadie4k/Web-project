@@ -107,7 +107,8 @@ export async function GET() {
           province,
           address,
           contact_phone,
-          contact_person
+          contact_person,
+          operating_hours
         )
       `)
       .eq("status", "OPEN")
