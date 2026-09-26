@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { getSessionToken } from "@/lib/session";
 import { effectiveBloodRequestStatus } from "@/types/database";
-import { canReceiveDonationRequests, PARENT_CONSENT_MESSAGE } from "@/lib/donorEligibility";
+import { evaluateDonorEligibility } from "@/lib/donorEligibility";
 
 // =========================================
 // POST /api/donations
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
 
     const { data: donorProfile, error: donorProfileError } = await supabaseAdmin
       .from("donor_profiles")
-      .select("date_of_birth, consent_form_url")
+      .select("weight, date_of_birth, last_donate_date, consent_form_url, is_ready")
       .eq("donor_id", userId)
       .maybeSingle();
 
@@ -78,8 +78,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "ไม่สามารถตรวจสอบสิทธิ์ผู้บริจาคได้" }, { status: 500 });
     }
 
-    if (!canReceiveDonationRequests(donorProfile)) {
-      return NextResponse.json({ error: PARENT_CONSENT_MESSAGE }, { status: 403 });
+    if (!donorProfile) {
+      return NextResponse.json({ error: "ไม่พบข้อมูลผู้บริจาค" }, { status: 404 });
+    }
+
+    if (!donorProfile.is_ready) {
+      return NextResponse.json(
+        { error: "กรุณาเปิดสถานะพร้อมบริจาคก่อนตอบรับเคส" },
+        { status: 403 },
+      );
+    }
+
+    const eligibility = evaluateDonorEligibility(donorProfile);
+    if (!eligibility.isEligible) {
+      return NextResponse.json(
+        { error: eligibility.reasons.join(" "), eligibility },
+        { status: 403 },
+      );
     }
 
     console.log("USER ID:", userId);

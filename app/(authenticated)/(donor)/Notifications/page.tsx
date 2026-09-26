@@ -8,20 +8,13 @@ import DonorSideBar from "@/components/layout/DonorSideBar";
 import RequestFeed from "@/components/donor/Notifications/RequestFeed";
 import Footer from "@/components/layout/Footer";
 
-import { supabase } from "@/lib/supabase";
 import type { BloodRequest } from "@/types/database";
-import { evaluateDonorEligibility } from "@/lib/donorEligibility";
 
-interface DonorProfile {
-  donor_id: string;
-  blood_type: "A" | "B" | "AB" | "O";
-  rh_factor: "Positive" | "Negative" | "+" | "-";
-  province: string;
-
-  weight?: number | null;
-  date_of_birth?: string | null;
-  last_donate_date?: string | null;
-  is_ready: boolean;
+interface EligibilityInfo {
+  isEligible: boolean;
+  isCoolingDown: boolean;
+  daysRemaining: number;
+  reasons: string[];
 }
 
 export default function RequestsPage() {
@@ -30,234 +23,49 @@ export default function RequestsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
 
-  const [eligibilityInfo, setEligibilityInfo] = useState<{
-    isEligible: boolean;
-    isCoolingDown: boolean;
-    daysRemaining: number;
-    reasons: string[];
-  }>({
+  const [eligibilityInfo, setEligibilityInfo] = useState<EligibilityInfo>({
     isEligible: false,
     isCoolingDown: false,
     daysRemaining: 0,
     reasons: [],
   });
 
-  const normalizeRh = (rh?: string | null) => {
-    if (!rh) return null;
-
-    const clean = rh.trim().toUpperCase();
-
-    if (clean === "+" || clean.startsWith("POS")) {
-      return "+";
-    }
-
-    if (clean === "-" || clean.startsWith("NEG")) {
-      return "-";
-    }
-
-    return null;
-  };
-
   useEffect(() => {
     const fetchRequests = async () => {
       try {
         setLoading(true);
 
-        // ==========================================
-        // 1. ตรวจสอบ Login
-        // ==========================================
-        const authRes = await fetch("/api/auth/check", {
-          method: "GET",
+        const response = await fetch("/api/donor/Notifications", {
           credentials: "include",
         });
 
-        if (!authRes.ok) {
-          console.warn(
-            "Unauthorized or session expired, redirecting to login..."
-          );
-
-          router.push("/login");
+        if (response.status === 401) {
+          router.replace("/login");
           return;
         }
 
-        const authData = await authRes.json();
-        const userId = authData?.user?.user_id;
-
-        if (!userId) {
-          console.warn(
-            "User ID not found in session, redirecting to login..."
-          );
-
-          router.push("/login");
-          return;
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || "ไม่สามารถโหลดรายการคำขอได้");
         }
 
-        console.log("Logged in user ID:", userId);
-
-        // ==========================================
-        // 2. ดึงข้อมูล Donor Profile
-        // ==========================================
-        const { data: donorProfile, error: profileError } =
-          await supabase
-            .from("donor_profiles")
-            .select(
-              `
-              donor_id,
-              blood_type,
-              rh_factor,
-              province,
-              weight,
-              date_of_birth,
-              last_donate_date,
-              is_ready
-            `
-            )
-            .eq("donor_id", userId)
-            .single<DonorProfile>();
-
-        if (profileError || !donorProfile) {
-          console.error(
-            "Donor profile error:",
-            profileError
-          );
-
-          setEligibilityInfo({
-            isEligible: false,
-            isCoolingDown: false,
-            daysRemaining: 0,
-            reasons: ["ไม่พบข้อมูลโปรไฟล์ผู้บริจาค"],
-          });
-
-          setRequests([]);
-          return;
-        }
-
-        // ==========================================
-        // 3. ตรวจสอบสิทธิ์การบริจาค
-        // ==========================================
-        const eligibility = evaluateDonorEligibility({
-          weight: donorProfile.weight,
-          date_of_birth: donorProfile.date_of_birth,
-          last_donate_date: donorProfile.last_donate_date,
-          is_ready: donorProfile.is_ready,
-        });
-
-        console.log(
-          "Donor eligibility:",
-          eligibility
-        );
-
+        setIsReady(Boolean(data.profile?.is_ready));
+        setEligibilityInfo(data.eligibility as EligibilityInfo);
+        setRequests((data.requests ?? []) as BloodRequest[]);
+      } catch (error) {
+        console.error("Unable to load donor requests:", error);
         setEligibilityInfo({
-          isEligible: eligibility.isEligible,
-          isCoolingDown: eligibility.isCoolingDown,
-          daysRemaining: eligibility.daysRemaining,
-          reasons: eligibility.reasons,
+          isEligible: false,
+          isCoolingDown: false,
+          daysRemaining: 0,
+          reasons: [
+            error instanceof Error
+              ? error.message
+              : "ไม่สามารถโหลดรายการคำขอได้",
+          ],
         });
-
-        // ==========================================
-        // 4. ถ้าไม่มีสิทธิ์บริจาค → ไม่ต้องหา Request
-        // ==========================================
-        if (!eligibility.isEligible) {
-          console.log(
-            "Donor is not eligible:",
-            eligibility.reasons
-          );
-
-          setRequests([]);
-          return;
-        }
-
-        // ==========================================
-        // 5. ดึง Blood Requests
-        // ==========================================
-        const {
-          data: requestData,
-          error: requestError,
-        } = await supabase
-          .from("blood_requests")
-          .select(
-            `
-            request_id,
-            hospital_id,
-            blood_type,
-            rh_factor,
-            units_needed,
-            urgency_level,
-            purpose,
-            target_date,
-            status,
-            created_at,
-            hospitals!inner (
-              hospital_id,
-              name,
-              province,
-              operating_hours
-            ),
-            donation_records (
-              record_id,
-              volume_ml,
-              status
-            )
-          `
-          )
-          .eq("status", "OPEN")
-          .eq(
-            "blood_type",
-            donorProfile.blood_type
-          )
-          .eq(
-            "hospitals.province",
-            donorProfile.province
-          )
-          .order("created_at", {
-            ascending: false,
-          });
-
-        if (requestError) {
-          console.error(
-            "Blood request error:",
-            requestError
-          );
-
-          setRequests([]);
-          return;
-        }
-
-        // ==========================================
-        // 6. Matching Rh
-        // ==========================================
-        const donorRh = normalizeRh(
-          donorProfile.rh_factor
-        );
-
-        const matchedRequests = (
-          requestData ?? []
-        ).filter((request: any) => {
-          const requestRh = normalizeRh(
-            request.rh_factor
-          );
-
-          return (
-            donorRh !== null &&
-            donorRh === requestRh
-          );
-        });
-
-        console.log(
-          "Matched blood requests:",
-          matchedRequests
-        );
-
-        setRequests(
-          matchedRequests as unknown as BloodRequest[]
-        );
-      } catch (err) {
-        console.error(
-          "Unexpected error:",
-          err
-        );
-
         setRequests([]);
       } finally {
         setLoading(false);
@@ -332,6 +140,15 @@ export default function RequestsPage() {
             {loading ? (
               <div className="py-12 text-center text-sm text-slate-500">
                 กำลังตรวจสอบสิทธิ์และโหลดรายการคำขอรับบริจาคโลหิต...
+              </div>
+            ) : eligibilityInfo.isEligible && !isReady ? (
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6 text-center shadow-sm">
+                <h3 className="text-base font-bold text-slate-800">
+                  ปิดสถานะพร้อมบริจาคอยู่
+                </h3>
+                <p className="mt-2 text-sm text-slate-600">
+                  เปิดสถานะพร้อมบริจาคจากหน้าโปรไฟล์หรือแดชบอร์ดเพื่อรับเคสที่ตรงกับคุณ
+                </p>
               </div>
             ) : !eligibilityInfo.isEligible ? (
               /* ==========================================

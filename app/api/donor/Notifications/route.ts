@@ -23,7 +23,7 @@ export async function GET() {
 
   const { data: profile, error: profileError } = await supabaseAdmin
     .from("donor_profiles")
-    .select("donor_id, blood_type, rh_factor, province, is_ready, date_of_birth, consent_form_url")
+    .select("donor_id, blood_type, rh_factor, province, weight, is_ready, last_donate_date, date_of_birth, consent_form_url")
     .eq("donor_id", user.user_id)
     .maybeSingle();
 
@@ -38,8 +38,9 @@ export async function GET() {
     return NextResponse.json({ error: "ไม่พบข้อมูลผู้บริจาค" }, { status: 404 });
   }
 
-  if (!profile.is_ready || !evaluateDonorEligibility(profile).isEligible) {
-    return NextResponse.json({ profile, requests: [] });
+  const eligibility = evaluateDonorEligibility(profile);
+  if (!eligibility.isEligible || !profile.is_ready) {
+    return NextResponse.json({ profile, eligibility, requests: [] });
   }
 
   const { data, error } = await supabaseAdmin
@@ -83,5 +84,5 @@ export async function GET() {
     (request) => normalizeRh(request.rh_factor) === normalizeRh(profile.rh_factor),
   );
 
-  return NextResponse.json({ profile, requests });
+  return NextResponse.json({ profile, eligibility, requests });
 }
