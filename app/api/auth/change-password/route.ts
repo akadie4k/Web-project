@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
     if (password !== confirmPassword) {
       return NextResponse.json(
-        { error: 'รหัสผ่านใหม่และการยืนยันรหัสผ่านไม่ตรงกัน' },
+        { error: 'รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง' },
         { status: 400 }
       );
     }
