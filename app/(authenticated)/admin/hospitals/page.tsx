@@ -45,7 +45,8 @@ export default function AdminHospitalPage() {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/api/admin/hospital", { credentials: "include" });
+      // ปรับแก้ URL ให้เติม s เป็น /api/admin/hospitals ให้ตรงกับโครงสร้างโฟลเดอร์
+      const res = await fetch("/api/admin/hospitals", { credentials: "include" });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
@@ -85,7 +86,8 @@ export default function AdminHospitalPage() {
       setSubmitting(true);
       setFeedback(null);
 
-      const res = await fetch("/api/admin/hospital", {
+      // ปรับแก้ URL ให้เติม s เป็น /api/admin/hospitals ให้ตรงกับโครงสร้างโฟลเดอร์
+      const res = await fetch("/api/admin/hospitals", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

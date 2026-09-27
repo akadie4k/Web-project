@@ -2,11 +2,20 @@ import { NextResponse, NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function POST(
+<<<<<<< HEAD
+  request: Request,
+  { params }: { params: Promise<{ id: string }> } // เปลี่ยนเป็น Promise<{ id: string }>
+) {
+  try {
+    const resolvedParams = await params; // await เพื่อดึงค่า params ออกมา
+    const recordId = resolvedParams.id;
+=======
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id: recordId } = await params;
+>>>>>>> upstream/main
     const body = await request.json();
     const { reason } = body;
 
